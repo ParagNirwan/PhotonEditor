@@ -1,0 +1,4 @@
+ 
+ Name: DS Photo Editor SDK
+ Version: 2.3
+ Documentation: https://www.dsphotoeditor.com/android
