@@ -28,6 +28,13 @@ public class MainActivity extends AppCompatActivity {
                 openGallery();
             }
         });
+        binding.cameraButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, openCamera.class);
+                startActivity(intent);
+            }
+        });
     }
 
     private void openGallery() {
