@@ -4,6 +4,7 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.AspectRatio;
 import androidx.camera.core.Camera;
@@ -13,11 +14,15 @@ import androidx.camera.core.ImageCaptureException;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.LifecycleOwner;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.Surface;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.Toast;
@@ -26,148 +31,130 @@ import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.File;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class openCamera extends AppCompatActivity {
-    ImageButton capture, toggleFlash, flipCamera;
-    private PreviewView previewView;
-    int cameraFacing = CameraSelector.LENS_FACING_BACK;
-    private final ActivityResultLauncher<String> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), new ActivityResultCallback<Boolean>() {
-        @Override
-        public void onActivityResult(Boolean result) {
-            if (result) {
-                startCamera(cameraFacing);
-            }
-        }
-    });
+    private static final String TAG = "openCamera";
+    private static final int REQUEST_CODE_PERMISSIONS = 101;
+    private final String[] REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA};
+
+    private PreviewView cameraPreview;
+    private ImageButton captureButton;
+
+    private ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private ImageCapture imageCapture;
+    private File outputDirectory;
+    private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
+
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_open_camera);
 
-        previewView = findViewById(R.id.cameraPreview);
-        capture = findViewById(R.id.capture);
-        toggleFlash = findViewById(R.id.toggleFlash);
-        flipCamera = findViewById(R.id.flipCamera);
+        cameraPreview = findViewById(R.id.cameraPreview);
+        captureButton = findViewById(R.id.capture);
 
-        if (ContextCompat.checkSelfPermission(openCamera.this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            activityResultLauncher.launch(Manifest.permission.CAMERA);
-        } else {
-            startCamera(cameraFacing);
+        outputDirectory = getOutputDirectory();
+
+        if (!allPermissionsGranted()) {
+            ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS);
         }
 
-        flipCamera.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (cameraFacing == CameraSelector.LENS_FACING_BACK) {
-                    cameraFacing = CameraSelector.LENS_FACING_FRONT;
-                } else {
-                    cameraFacing = CameraSelector.LENS_FACING_BACK;
-                }
-                startCamera(cameraFacing);
-            }
-        });
-    }
+        cameraProviderFuture = ProcessCameraProvider.getInstance(this);
 
-    public void startCamera(int cameraFacing) {
-        int aspectRatio = aspectRatio(previewView.getWidth(), previewView.getHeight());
-        ListenableFuture<ProcessCameraProvider> listenableFuture = ProcessCameraProvider.getInstance(this);
-
-        listenableFuture.addListener(() -> {
+        cameraProviderFuture.addListener(() -> {
             try {
-                ProcessCameraProvider cameraProvider = (ProcessCameraProvider) listenableFuture.get();
-
-                Preview preview = new Preview.Builder().setTargetAspectRatio(aspectRatio).build();
-
-                ImageCapture imageCapture = new ImageCapture.Builder().setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
-                        .setTargetRotation(getWindowManager().getDefaultDisplay().getRotation()).build();
-
-                CameraSelector cameraSelector = new CameraSelector.Builder()
-                        .requireLensFacing(cameraFacing).build();
-
-                cameraProvider.unbindAll();
-
-                Camera camera = cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture);
-
-                capture.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        if (ContextCompat.checkSelfPermission(openCamera.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                            activityResultLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-                            System.out.println("Button Pressed");
-                        } else {
-                            takePicture(imageCapture);
-                            System.out.println("Button Pressed else statement");
-                        }
-                    }
-                });
-
-                toggleFlash.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        setFlashIcon(camera);
-                    }
-                });
-
-                preview.setSurfaceProvider(previewView.getSurfaceProvider());
-            } catch (ExecutionException | InterruptedException e) {
-                e.printStackTrace();
+                ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
+                bindPreview(cameraProvider);
+            } catch (Exception e) {
+                Log.e(TAG, "Error initializing camera", e);
             }
         }, ContextCompat.getMainExecutor(this));
-    }
 
-    public void takePicture(ImageCapture imageCapture) {
-        final File file = new File(getExternalFilesDir(null), System.currentTimeMillis() + ".jpg");
-        ImageCapture.OutputFileOptions outputFileOptions = new ImageCapture.OutputFileOptions.Builder(file).build();
-        imageCapture.takePicture(outputFileOptions, Executors.newCachedThreadPool(), new ImageCapture.OnImageSavedCallback() {
-            @Override
-            public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(openCamera.this, "Image saved at: " + file.getPath(), Toast.LENGTH_SHORT).show();
-                    }
-                });
-                startCamera(cameraFacing);
-            }
-
-            @Override
-            public void onError(@NonNull ImageCaptureException exception) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(openCamera.this, "Failed to save: " + exception.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
-                startCamera(cameraFacing);
-            }
+        captureButton.setOnClickListener(view -> {
+            takePhoto();
         });
     }
 
-    private void setFlashIcon(Camera camera) {
-        if (camera.getCameraInfo().hasFlashUnit()) {
-            if (camera.getCameraInfo().getTorchState().getValue() == 0) {
-                camera.getCameraControl().enableTorch(true);
-                toggleFlash.setImageResource(R.drawable.baseline_flash_off_24);
-            } else {
-                camera.getCameraControl().enableTorch(false);
-                toggleFlash.setImageResource(R.drawable.baseline_flash_on_24);
+    private boolean allPermissionsGranted() {
+        for (String permission : REQUIRED_PERMISSIONS) {
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                return false;
             }
-        } else {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(openCamera.this, "Flash is not available currently", Toast.LENGTH_SHORT).show();
-                }
-            });
         }
+        return true;
     }
 
-    private int aspectRatio(int width, int height) {
-        double previewRatio = (double) Math.max(width, height) / Math.min(width, height);
-        if (Math.abs(previewRatio - 4.0 / 3.0) <= Math.abs(previewRatio - 16.0 / 9.0)) {
-            return AspectRatio.RATIO_4_3;
+    private File getOutputDirectory() {
+        File mediaDir = new File(getExternalMediaDirs()[0], "Photon Editor");
+        mediaDir.mkdirs();
+        return mediaDir;
+    }
+
+    private void bindPreview(ProcessCameraProvider cameraProvider) {
+        Preview preview = new Preview.Builder().build();
+        CameraSelector cameraSelector = new CameraSelector.Builder()
+                .requireLensFacing(CameraSelector.LENS_FACING_BACK)
+                .build();
+
+        // Set the surface provider on the preview
+        preview.setSurfaceProvider(cameraPreview.getSurfaceProvider());
+
+        imageCapture = new ImageCapture.Builder()
+                .setTargetRotation(getDisplayRotation())
+                .build();
+
+        Camera camera = cameraProvider.bindToLifecycle((LifecycleOwner) this, cameraSelector, preview, imageCapture);
+    }
+
+    private int getDisplayRotation() {
+        int rotation = getWindowManager().getDefaultDisplay().getRotation();
+        int degrees = 0;
+        switch (rotation) {
+            case Surface.ROTATION_0:
+                degrees = 0;
+                break;
+            case Surface.ROTATION_90:
+                degrees = 90;
+                break;
+            case Surface.ROTATION_180:
+                degrees = 180;
+                break;
+            case Surface.ROTATION_270:
+                degrees = 270;
+                break;
         }
-        return AspectRatio.RATIO_16_9;
+        return degrees;
+    }
+
+    private void takePhoto() {
+        File photoFile = new File(outputDirectory, System.currentTimeMillis() + ".jpg");
+
+        ImageCapture.OutputFileOptions outputFileOptions =
+                new ImageCapture.OutputFileOptions.Builder(photoFile).build();
+
+        imageCapture.takePicture(outputFileOptions, executorService,
+                new ImageCapture.OnImageSavedCallback() {
+                    @Override
+                    public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
+                        runOnUiThread(() -> {
+                            Toast.makeText(openCamera.this, "Photo saved: " + photoFile.getAbsolutePath(),
+                                    Toast.LENGTH_LONG).show();
+                        });
+                    }
+
+                    @Override
+                    public void onError(@NonNull ImageCaptureException exception) {
+                        Log.e(TAG, "Photo capture failed: " + exception.getMessage(), exception);
+                    }
+                });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        executorService.shutdown();
     }
 }
