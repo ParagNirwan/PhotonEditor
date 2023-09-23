@@ -18,20 +18,23 @@
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="40sp"
         android:id="@+id/capture"
-        android:src="@drawable/baseline_camera_24"
+        android:src="@drawable/shutter1"
         android:scaleType="centerCrop"
         android:background="?attr/selectableItemBackgroundBorderless"
-        app:tint="#fff" />
+         />
 
     <ImageButton
+        android:id="@+id/toggleFlash"
         android:layout_width="40sp"
         android:layout_height="40sp"
         android:layout_alignParentEnd="true"
-        android:layout_margin="10sp"
+        android:layout_marginStart="10sp"
+        android:layout_marginTop="10sp"
+        android:layout_marginEnd="10sp"
+        android:layout_marginBottom="10sp"
+        android:background="?attr/selectableItemBackgroundBorderless"
         android:src="@drawable/baseline_flash_on_24"
-        app:tint="#fff"
-        android:id="@+id/toggleFlash"
-        android:background="?attr/selectableItemBackgroundBorderless"/>
+        app:tint="#fff" />
 
     <ImageButton
         android:layout_width="40sp"

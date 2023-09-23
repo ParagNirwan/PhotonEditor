@@ -23,7 +23,7 @@
         android:label="@string/app_name"
         android:largeHeap="true"
         android:requestLegacyExternalStorage="true"
-        android:roundIcon="@drawable/icon"
+        android:roundIcon="@drawable/logo"
         android:supportsRtl="true"
         android:theme="@style/Theme.PhotonEditor"
         tools:targetApi="31">
@@ -41,6 +41,7 @@
             android:exported="false" />
         <activity
             android:name=".splashScreen"
+            android:theme="@style/Theme.Design.NoActionBar"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -50,7 +51,7 @@
 
             <meta-data
                 android:name="android.app.icon"
-                android:resource="@drawable/icon" />
+                android:resource="@drawable/logo" />
         </activity>
         <activity
             android:name=".MainActivity"

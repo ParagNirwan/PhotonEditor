@@ -17,7 +17,7 @@ public class splashScreen extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash_screen);
-        progressBar = findViewById(R.id.progressBar2);
+        //progressBar = findViewById(R.id.progressBar2);
         FirebaseAuth auth = FirebaseAuth.getInstance();
         // Set up the animation
         animateProgressBar();
