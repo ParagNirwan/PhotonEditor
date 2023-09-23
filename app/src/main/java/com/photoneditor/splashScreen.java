@@ -8,6 +8,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.widget.ProgressBar;
 
+import com.google.firebase.auth.FirebaseAuth;
+
 public class splashScreen extends AppCompatActivity {
     private ProgressBar progressBar;
     @Override
@@ -16,14 +18,21 @@ public class splashScreen extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash_screen);
         progressBar = findViewById(R.id.progressBar2);
-
+        FirebaseAuth auth = FirebaseAuth.getInstance();
         // Set up the animation
         animateProgressBar();
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
+
             @Override
             public void run() {
-                startActivity(new Intent(splashScreen.this,MainActivity.class));finish();
+
+
+                if (auth.getCurrentUser()== null){
+                    Intent intent = new Intent(splashScreen.this,login.class);
+                    startActivity(intent);
+                }
+                else startActivity(new Intent(splashScreen.this,MainActivity.class));finish();
             }
         },3000);
 

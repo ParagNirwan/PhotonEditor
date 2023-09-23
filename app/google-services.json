@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "991902575182",
+    "project_id": "photon-editor-610e4",
+    "storage_bucket": "photon-editor-610e4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:991902575182:android:fb4423b47ec2716d48b11f",
+        "android_client_info": {
+          "package_name": "com.photoneditor"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCuzCPFXkmJoWiD0iWVgdJ2qlxDozSMolE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
