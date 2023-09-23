@@ -4,17 +4,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#1B1B1B"
+    android:background="#141414"
     tools:context="com.photoneditor.login">
 
     <ImageView
         android:id="@+id/imageView5"
-        android:layout_width="518dp"
-        android:layout_height="769dp"
+        android:layout_width="542dp"
+        android:layout_height="816dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.503"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.388"
         app:srcCompat="@drawable/bg5" />
 
     <TextView
@@ -40,10 +42,9 @@
         android:textColor="#E3E3E3"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.846" />
+        app:layout_constraintVertical_bias="0.869" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/button"
@@ -58,7 +59,7 @@
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/editTextTextPassword"
-        app:layout_constraintVertical_bias="0.468" />
+        app:layout_constraintVertical_bias="0.524" />
 
     <EditText
         android:id="@+id/editTextTextEmailAddress"

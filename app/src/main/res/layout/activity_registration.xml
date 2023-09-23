@@ -17,14 +17,12 @@
 
         <ImageView
             android:id="@+id/imageView5"
-            android:layout_width="518dp"
-            android:layout_height="769dp"
+            android:layout_width="650dp"
+            android:layout_height="1112dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.504"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.0"
             app:srcCompat="@drawable/bg5" />
 
         <ImageView
@@ -40,10 +38,10 @@
 
         <TextView
             android:id="@+id/textView2"
-            android:layout_width="109dp"
+            android:layout_width="133dp"
             android:layout_height="41dp"
             android:layout_marginTop="24dp"
-            android:text="Sign In"
+            android:text="Register"
             android:textColor="@color/white"
             android:textSize="30dp"
             android:textStyle="bold"
@@ -118,7 +116,7 @@
             android:layout_width="150dp"
             android:layout_height="wrap_content"
             android:background="@drawable/button_background"
-            android:text="Signin"
+            android:text="Register"
             android:textColor="@color/white"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

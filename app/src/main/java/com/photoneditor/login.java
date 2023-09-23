@@ -34,6 +34,20 @@ TextView textView;
         email = findViewById(R.id.editTextTextEmailAddress);
         password = findViewById(R.id.editTextTextPassword);
         textView= findViewById(R.id.textView);
+
+        textView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Create an intent to navigate to the Registration activity
+                Intent intent = new Intent(login.this, registration.class);
+
+                // Start the Registration activity
+                startActivity(intent);
+            }
+        });
+
+
+
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -68,16 +82,7 @@ TextView textView;
                     });
                 }
 
-                textView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        // Create an intent to navigate to the Registration activity
-                        Intent intent = new Intent(login.this, registration.class);
 
-                        // Start the Registration activity
-                        startActivity(intent);
-                    }
-                });
 
 
             }
