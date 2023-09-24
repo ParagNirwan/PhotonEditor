@@ -14,7 +14,12 @@ import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LifecycleOwner;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.media.ExifInterface;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -26,6 +31,7 @@ import android.widget.Toast;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -45,11 +51,42 @@ public class openCamera extends AppCompatActivity {
     private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
     private boolean isFlashOn = false;
     private int currentCameraLensFacing = CameraSelector.LENS_FACING_BACK;
-
+    private LocationManager locationManager;
+    private LocationListener locationListener;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_open_camera);
+
+
+        //Location
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        locationListener = new LocationListener() {
+            @Override
+            public void onLocationChanged(Location location) {
+                // Handle location updates if needed
+            }
+
+            @Override
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+                // Handle location provider status changes if needed
+            }
+
+            @Override
+            public void onProviderEnabled(String provider) {
+                // Handle location provider enabled if needed
+            }
+
+            @Override
+            public void onProviderDisabled(String provider) {
+                // Handle location provider disabled if needed
+            }
+        };
+        //
+
+
+
+
 
         cameraPreview = findViewById(R.id.cameraPreview);
         captureButton = findViewById(R.id.capture);
@@ -158,8 +195,11 @@ flipCamera = findViewById(R.id.flipCamera);
         imageCapture.takePicture(outputFileOptions, executorService, new ImageCapture.OnImageSavedCallback() {
             @Override
             public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
+                File savedPhoto = outputFileResults.getSavedUri() != null ?
+                        new File(outputFileResults.getSavedUri().getPath()) : photoFile;
+
                 runOnUiThread(() -> {
-                    Toast.makeText(openCamera.this, "Photo saved: " + photoFile.getAbsolutePath(),
+                    Toast.makeText(openCamera.this, "Photo saved: " + savedPhoto.getAbsolutePath(),
                             Toast.LENGTH_LONG).show();
                 });
             }
@@ -171,6 +211,7 @@ flipCamera = findViewById(R.id.flipCamera);
         });
     }
 
+
     private void toggleFlash() {
         isFlashOn = !isFlashOn;
         imageCapture.setFlashMode(
@@ -178,5 +219,58 @@ flipCamera = findViewById(R.id.flipCamera);
         );
         int flashIconResource = isFlashOn ? R.drawable.baseline_flash_on_24 : R.drawable.baseline_flash_off_24;
         toggleFlash.setImageResource(flashIconResource);
+    }
+    private Location getLastKnownLocation() {
+        Location lastKnownLocation = null;
+        try {
+            // Check for permission here if needed
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                // Request the last known location from the location manager
+                lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            }
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        }
+        return lastKnownLocation;
+    }
+
+    private void addLocationToImage(File imageFile, Location location) {
+        try {
+            // Use an image library like ExifInterface to add GPS coordinates to image EXIF metadata
+            ExifInterface exifInterface = new ExifInterface(imageFile.getAbsolutePath());
+
+            double latitude = location.getLatitude();
+            double longitude = location.getLongitude();
+
+            exifInterface.setAttribute(ExifInterface.TAG_GPS_LATITUDE, convertLocationToDMS(latitude));
+            exifInterface.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, convertLocationToDMS(longitude));
+
+            if (latitude >= 0) {
+                exifInterface.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, "N");
+            } else {
+                exifInterface.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, "S");
+            }
+
+            if (longitude >= 0) {
+                exifInterface.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, "E");
+            } else {
+                exifInterface.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, "W");
+            }
+
+            exifInterface.saveAttributes();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String convertLocationToDMS(double location) {
+        location = Math.abs(location);
+        int degrees = (int) location;
+        location = (location - degrees) * 60;
+        int minutes = (int) location;
+        location = (location - minutes) * 60;
+        int seconds = (int) (location * 1000);
+
+        return degrees + "/1," + minutes + "/1," + seconds + "/1000";
     }
 }
