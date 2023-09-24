@@ -25,7 +25,7 @@
         android:layout_height="wrap_content"
         android:text="Log in"
         android:textColor="@color/white"
-        android:textSize="50dp"
+        android:textSize="35dp"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/editTextTextEmailAddress"
         app:layout_constraintEnd_toEndOf="parent"
@@ -96,7 +96,7 @@
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="91dp"
-        android:layout_height="73dp"
+        android:layout_height="82dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
