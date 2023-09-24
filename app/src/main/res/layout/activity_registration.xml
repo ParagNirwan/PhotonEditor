@@ -21,8 +21,10 @@
             android:layout_height="1112dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.502"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.501"
             app:srcCompat="@drawable/bg5" />
 
         <ImageView
@@ -136,6 +138,8 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/button"
             app:layout_constraintVertical_bias="0.12" />
+
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -2,8 +2,10 @@ package com.photoneditor;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -123,9 +125,11 @@ public class registration extends AppCompatActivity {
                                                             @Override
                                                             public void onComplete(@NonNull Task<Void> task) {
                                                                 if(task.isSuccessful()){
-                                                                    Intent intent = new Intent(registration.this,MainActivity.class);
+                                                                    Toast.makeText(registration.this,"Registration successful. Login to continue.",Toast.LENGTH_LONG).show();
+                                                                    Intent intent = new Intent(registration.this,login.class);
                                                                     startActivity(intent);
                                                                     finish();
+
                                                                 }else{
                                                                     Toast.makeText(registration.this,"Some error occured.",Toast.LENGTH_SHORT).show();
                                                                 }
@@ -144,6 +148,7 @@ public class registration extends AppCompatActivity {
                                         @Override
                                         public void onComplete(@NonNull Task<Void> task) {
                                             if(task.isSuccessful()){
+
                                                 Intent intent = new Intent(registration.this,MainActivity.class);
                                                 startActivity(intent);
                                                 finish();
