@@ -14,6 +14,7 @@ import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LifecycleOwner;
 
 import android.Manifest;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -22,6 +23,7 @@ import android.location.LocationManager;
 import android.media.ExifInterface;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Surface;
 import android.view.View;
@@ -32,6 +34,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -39,7 +42,8 @@ public class openCamera extends AppCompatActivity {
 
     private static final String TAG = "OpenCameraX";
     private static final int REQUEST_CODE_PERMISSIONS = 101;
-    private final String[] REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA};
+    private final String[] REQUIRED_PERMISSIONS = new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.CAMERA,  Manifest.permission.READ_EXTERNAL_STORAGE};
 
     private PreviewView cameraPreview;
     private ImageButton captureButton;
@@ -82,11 +86,6 @@ public class openCamera extends AppCompatActivity {
                 // Handle location provider disabled if needed
             }
         };
-        //
-
-
-
-
 
         cameraPreview = findViewById(R.id.cameraPreview);
         captureButton = findViewById(R.id.capture);
@@ -121,6 +120,15 @@ flipCamera = findViewById(R.id.flipCamera);
             currentCameraLensFacing = (currentCameraLensFacing == CameraSelector.LENS_FACING_BACK) ?
                     CameraSelector.LENS_FACING_FRONT : CameraSelector.LENS_FACING_BACK;
 
+            // Unbind the camera use cases first
+            try {
+                unbindCameraUseCases(cameraProviderFuture.get());
+            } catch (ExecutionException e) {
+                throw new RuntimeException(e);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+
             // Rebind camera use cases with the new camera selector
             cameraProviderFuture.addListener(() -> {
                 try {
@@ -131,6 +139,7 @@ flipCamera = findViewById(R.id.flipCamera);
                 }
             }, ContextCompat.getMainExecutor(this));
         });
+
     }
 
     private boolean allPermissionsGranted() {
@@ -144,7 +153,7 @@ flipCamera = findViewById(R.id.flipCamera);
 
     private File getOutputDirectory() {
 
-        File mediaDir = new File(getExternalMediaDirs()[0], "Photon Editor");
+        File mediaDir = new File(getExternalMediaDirs()[0], "PhotonEditorCaptures");
         mediaDir.mkdirs();
         return mediaDir;
     }
@@ -187,6 +196,13 @@ flipCamera = findViewById(R.id.flipCamera);
     }
 
     private void takePhoto() {
+        String x = "Parag";
+        ContentValues cv = new ContentValues();
+        cv.put(MediaStore.MediaColumns.DISPLAY_NAME,x);
+        cv.put(MediaStore.MediaColumns.MIME_TYPE,"image/jpeg");
+
+
+
         File photoFile = new File(outputDirectory, System.currentTimeMillis() + ".jpg");
 
         ImageCapture.OutputFileOptions outputFileOptions =
@@ -198,9 +214,17 @@ flipCamera = findViewById(R.id.flipCamera);
                 File savedPhoto = outputFileResults.getSavedUri() != null ?
                         new File(outputFileResults.getSavedUri().getPath()) : photoFile;
 
+                // Get the last known location
+                Location lastKnownLocation = getLastKnownLocation();
+
+                // Add location information to the saved photo
+                if (lastKnownLocation != null) {
+                    addLocationToImage(savedPhoto, lastKnownLocation);
+                }
+
                 runOnUiThread(() -> {
-                    Toast.makeText(openCamera.this, "Photo saved: " + savedPhoto.getAbsolutePath(),
-                            Toast.LENGTH_LONG).show();
+                    Toast.makeText(openCamera.this, "Image Captured",
+                            Toast.LENGTH_SHORT).show();
                 });
             }
 
@@ -210,7 +234,6 @@ flipCamera = findViewById(R.id.flipCamera);
             }
         });
     }
-
 
     private void toggleFlash() {
         isFlashOn = !isFlashOn;
@@ -233,10 +256,13 @@ flipCamera = findViewById(R.id.flipCamera);
         }
         return lastKnownLocation;
     }
-
+    private void unbindCameraUseCases(ProcessCameraProvider cameraProvider) {
+        cameraProvider.unbindAll();
+    }
     private void addLocationToImage(File imageFile, Location location) {
         try {
-            // Use an image library like ExifInterface to add GPS coordinates to image EXIF metadata
+
+            //
             ExifInterface exifInterface = new ExifInterface(imageFile.getAbsolutePath());
 
             double latitude = location.getLatitude();

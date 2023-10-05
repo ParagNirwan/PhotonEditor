@@ -94,14 +94,16 @@ public class registration extends AppCompatActivity {
                 if(TextUtils.isEmpty(name) || TextUtils.isEmpty(emailId) || TextUtils.isEmpty(passwort) ||TextUtils.isEmpty(rePasswort)){
                     Toast.makeText(registration.this, "All fields are required",Toast.LENGTH_SHORT).show();
                 }
-                else if(emailId.matches(emailRegex)){
+                else if(!emailId.matches(emailRegex)){
                     email.setError("Invalid email");
-                } else if (passwort.length()<7) {
-                    password.setError("Password must be more than 7 characters");
-
+                    Toast.makeText(registration.this, "Invalid email",Toast.LENGTH_SHORT).show();
+                } else if (passwort.length()<8) {
+                    password.setError("Password must be more than 8 characters");
+                    Toast.makeText(registration.this, "Passwords must be more than 8 characters",Toast.LENGTH_SHORT).show();
                 }
                 else if(!rePasswort.matches(passwort)){
                     retypePassword.setError("Passwords don't match");
+                    Toast.makeText(registration.this, "Passwords don't match",Toast.LENGTH_SHORT).show();
                 }else {
                     auth.createUserWithEmailAndPassword(emailId,passwort).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                         @Override
